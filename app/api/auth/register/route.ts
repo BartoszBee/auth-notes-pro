@@ -2,10 +2,25 @@ import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import sql from "@/lib/db";
 import bcrypt from "bcryptjs";
+import { z } from "zod";
+
+const registerSchema = z.object({
+  email: z.email(),
+  password: z.string().min(8),
+});
 
 export async function POST(request: NextRequest) {
   try {
     const { email, password } = await request.json();
+
+    const validation = registerSchema.safeParse({ email, password });
+
+    if (!validation.success) {
+      return NextResponse.json(
+        { error: validation.error.issues },
+        { status: 400 },
+      );
+    }
 
     const result = await sql`
       SELECT * FROM users
