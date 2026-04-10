@@ -1,0 +1,12 @@
+DO $$ BEGIN
+  CREATE TYPE user_role AS ENUM ('user', 'admin');
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
+
+CREATE TABLE IF NOT EXISTS users (
+  id BIGSERIAL PRIMARY KEY,
+  email TEXT NOT NULL UNIQUE,
+  password_hash TEXT NOT NULL,
+  role user_role NOT NULL DEFAULT 'user',
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
