@@ -32,6 +32,7 @@ Cel: użytkownik musi umieć **obronić każdą linię kodu** na rozmowie rekrut
 - `params` w dynamic routes jest `Promise` → zawsze `await params`
 - Turbopack jest domyślnym bundlerem (nie Webpack)
 - `next build` nie uruchamia lintera automatycznie
+- `middleware.ts` jest deprecated → plik nazywa się `proxy.ts`, funkcja `proxy()` (nie `middleware()`)
 
 ## Funkcjonalności do zbudowania
 

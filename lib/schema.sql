@@ -10,3 +10,20 @@ CREATE TABLE IF NOT EXISTS users (
   role user_role NOT NULL DEFAULT 'user',
   created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
+
+
+
+  CREATE TABLE IF NOT EXISTS notes (
+  id BIGSERIAL PRIMARY KEY,
+  user_id BIGINT NOT NULL,
+  title TEXT NOT NULL,
+  content TEXT,  
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP WITH TIME ZONE,
+  CONSTRAINT fk_note_owner
+      FOREIGN KEY(user_id)
+      REFERENCES users(id)
+      ON DELETE CASCADE
+);
+
+CREATE INDEX IF NOT EXISTS idx_notes_user_id ON notes(user_id);
