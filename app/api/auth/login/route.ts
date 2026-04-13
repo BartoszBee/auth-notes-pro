@@ -3,12 +3,9 @@ import bcrypt from "bcryptjs";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import sql from "@/lib/db";
-import { z } from "zod";
+import { loginSchema } from "@/lib/schemas";
 
-const loginSchema = z.object({
-  email: z.email(),
-  password: z.string().min(8),
-});
+
 
 export async function POST(request: NextRequest) {
   try {
