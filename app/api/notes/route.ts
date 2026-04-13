@@ -26,21 +26,54 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: note.error.issues }, { status: 400 });
   }
 
-  const result = await sql`
+  try {
+    const result = await sql`
     INSERT INTO notes (user_id, title, content)
     VALUES (${user.id}, ${note.data.title}, ${note.data.content ?? null})
     RETURNING id, title, content
   `;
 
-  if (result.length === 0) {
+    if (result.length === 0) {
+      return NextResponse.json(
+        { error: "Nie udało się utworzyć notatki - spróbuj ponownie później" },
+        { status: 500 },
+      );
+    }
+
+    return NextResponse.json(
+      { id: result[0].id, title: result[0].title, content: result[0].content },
+      { status: 201 },
+    );
+  } catch {
     return NextResponse.json(
       { error: "Nie udało się utworzyć notatki - spróbuj ponownie później" },
       { status: 500 },
     );
   }
+}
 
-  return NextResponse.json(
-    { id: result[0].id, title: result[0].title, content: result[0].content },
-    { status: 201 },
-  );
+export async function GET() {
+  const user = await getUserFromRequest();
+  if (!user) {
+    return NextResponse.json(
+      { error: "Użytkownik niezalogowany" },
+      { status: 401 },
+    );
+  }
+
+  try{
+  const result = await sql`
+    SELECT id, title, content, created_at FROM notes
+    WHERE user_id = ${user.id}
+    ORDER BY created_at DESC
+  `;
+
+  return NextResponse.json(result);
+  }catch{
+     return NextResponse.json(
+        { error: "Błąd komunikacji z serwerem, spróbuj ponownie później" },
+        { status: 500 },
+      );
+  }
+
 }
