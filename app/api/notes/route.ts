@@ -1,13 +1,10 @@
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { getUserFromRequest } from "@/lib/auth";
-import { z } from "zod";
+import { noteSchema } from "@/lib/schemas";
 import sql from "@/lib/db";
 
-const noteSchema = z.object({
-  title: z.string().min(3),
-  content: z.string().optional(),
-});
+
 
 export async function POST(request: NextRequest) {
   const user = await getUserFromRequest();
