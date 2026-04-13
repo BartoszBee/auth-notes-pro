@@ -58,19 +58,28 @@ export async function GET() {
     );
   }
 
-  try{
-  const result = await sql`
+  try {
+    let result = null;
+    if (user.role === "admin") {
+      result = await sql`
+    SELECT id, title, content, created_at FROM notes    
+    ORDER BY created_at DESC
+  `;
+    } else {
+      result = await sql`
     SELECT id, title, content, created_at FROM notes
     WHERE user_id = ${user.id}
     ORDER BY created_at DESC
   `;
+    }
 
-  return NextResponse.json(result);
-  }catch{
-     return NextResponse.json(
-        { error: "Błąd komunikacji z serwerem, spróbuj ponownie później" },
-        { status: 500 },
-      );
+
+    return NextResponse.json(result);
+  } catch {
+    return NextResponse.json(
+      { error: "Błąd komunikacji z serwerem, spróbuj ponownie później" },
+      { status: 500 },
+    );
   }
 
 }
