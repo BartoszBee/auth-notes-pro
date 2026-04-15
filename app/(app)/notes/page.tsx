@@ -1,14 +1,19 @@
 "use client";
 import type { Note } from "@/types";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
 
 export default function Notes() {
+  const queryClient = useQueryClient();
   const { data, isLoading, isError } = useQuery<Note[]>({
     queryKey: ["notes"],
     queryFn: () => fetch("/api/notes").then((res) => res.json()),
   });
-  
+
+  const mutation =  useMutation<Response, Error, number>({
+    mutationFn: (id) => fetch(`/api/notes/${id}`, { method: "DELETE" }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["notes"] }),
+  });
 
   if (isLoading) return <div>Loading...</div>;
   if (isError) return <div>Error</div>;
@@ -23,6 +28,10 @@ export default function Notes() {
               <h2>{note.title}</h2>
               {note.content && <p>{note.content}</p>}
               <p>{note.created_at}</p>
+              <div>
+                <Link href={`/notes/${note.id}/edit`}>Edytuj</Link>
+                <button onClick={()=>mutation.mutate(note.id)}>Usuń</button>
+              </div>
             </li>
           ))}
         </ul>
