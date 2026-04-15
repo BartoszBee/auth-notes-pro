@@ -49,7 +49,9 @@ export async function POST(request: NextRequest) {
   }
 }
 
-export async function GET() {
+export async function GET(request: NextRequest) {
+
+  const search = request.nextUrl.searchParams.get("search");
   const user = await getUserFromRequest();
   if (!user) {
     return NextResponse.json(
@@ -62,13 +64,15 @@ export async function GET() {
     let result = null;
     if (user.role === "admin") {
       result = await sql`
-    SELECT id, title, content, created_at FROM notes    
+    SELECT id, title, content, created_at FROM notes
+    WHERE title ILIKE ${'%' + (search ?? '') + '%'}
     ORDER BY created_at DESC
   `;
     } else {
       result = await sql`
     SELECT id, title, content, created_at FROM notes
     WHERE user_id = ${user.id}
+    AND title ILIKE ${'%' + (search ?? '') + '%'}
     ORDER BY created_at DESC
   `;
     }
