@@ -1,7 +1,9 @@
-DO $$ BEGIN
-  CREATE TYPE user_role AS ENUM ('user', 'admin');
-EXCEPTION WHEN duplicate_object THEN NULL;
-END $$;
+DO $ $ BEGIN CREATE TYPE user_role AS ENUM ('user', 'admin');
+
+EXCEPTION
+WHEN duplicate_object THEN NULL;
+
+END $ $;
 
 CREATE TABLE IF NOT EXISTS users (
   id BIGSERIAL PRIMARY KEY,
@@ -11,19 +13,25 @@ CREATE TABLE IF NOT EXISTS users (
   created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
-
-
-  CREATE TABLE IF NOT EXISTS notes (
+CREATE TABLE IF NOT EXISTS notes (
   id BIGSERIAL PRIMARY KEY,
   user_id BIGINT NOT NULL,
   title TEXT NOT NULL,
-  content TEXT,  
+  content TEXT,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP WITH TIME ZONE,
-  CONSTRAINT fk_note_owner
-      FOREIGN KEY(user_id)
-      REFERENCES users(id)
-      ON DELETE CASCADE
+  CONSTRAINT fk_note_owner FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
 CREATE INDEX IF NOT EXISTS idx_notes_user_id ON notes(user_id);
+
+CREATE TABLE tags (
+  id SERIAL PRIMARY KEY,
+  name VARCHAR(50) UNIQUE NOT NULL
+);
+
+CREATE TABLE note_tags (
+  note_id INTEGER REFERENCES notes(id) ON DELETE CASCADE,
+  tag_id INTEGER REFERENCES tags(id) ON DELETE CASCADE,
+  PRIMARY KEY (note_id, tag_id)
+);
