@@ -3,4 +3,5 @@ export type Note = {
     title: string;
     content: string | null;
     created_at: string;
+    tags: string[];
 }

@@ -64,16 +64,31 @@ export async function GET(request: NextRequest) {
     let result = null;
     if (user.role === "admin") {
       result = await sql`
-    SELECT id, title, content, created_at FROM notes
-    WHERE title ILIKE ${'%' + (search ?? '') + '%'}
-    ORDER BY created_at DESC
+    SELECT
+    notes.id,
+    notes.title,
+    notes.content,
+    notes.created_at,
+    array_agg(tags.name) FILTER (WHERE tags.name IS NOT NULL) AS tags
+    FROM notes
+    LEFT JOIN note_tags ON notes.id = note_tags.note_id
+    LEFT JOIN tags      ON note_tags.tag_id = tags.id
+    WHERE notes.title ILIKE ${'%' + (search ?? '') + '%'}
+    GROUP BY notes.id
   `;
     } else {
       result = await sql`
-    SELECT id, title, content, created_at FROM notes
-    WHERE user_id = ${user.id}
-    AND title ILIKE ${'%' + (search ?? '') + '%'}
-    ORDER BY created_at DESC
+    SELECT
+    notes.id,
+    notes.title,
+    notes.content,
+    notes.created_at,
+    array_agg(tags.name) FILTER (WHERE tags.name IS NOT NULL) AS tags
+    FROM notes
+    LEFT JOIN note_tags ON notes.id = note_tags.note_id
+    LEFT JOIN tags      ON note_tags.tag_id = tags.id
+    WHERE notes.user_id = ${user.id} AND notes.title ILIKE ${'%' + (search ?? '') + '%'}
+    GROUP BY notes.id
   `;
     }
 
