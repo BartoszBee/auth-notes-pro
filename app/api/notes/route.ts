@@ -15,20 +15,43 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const { title, content } = await request.json();
+  const { title, content, tags } = await request.json();
 
-  const note = noteSchema.safeParse({ title, content });
+  const note = noteSchema.safeParse({ title, content, tags });
 
   if (!note.success) {
     return NextResponse.json({ error: note.error.issues }, { status: 400 });
   }
 
   try {
-    const result = await sql`
+
+    const result = await sql.begin(async (sql) => {
+
+      const insertedNote = await sql`
     INSERT INTO notes (user_id, title, content)
     VALUES (${user.id}, ${note.data.title}, ${note.data.content ?? null})
     RETURNING id, title, content
   `;
+
+      if (note.data.tags && note.data.tags.length > 0) {
+        const insertedTags = await sql`
+          INSERT INTO tags (name)
+          SELECT UNNEST(${note.data.tags}::text[])
+          ON CONFLICT (name) DO UPDATE SET name = EXCLUDED.name
+          RETURNING id
+        `;
+
+
+        await sql`
+        INSERT INTO note_tags (note_id, tag_id)
+        SELECT ${insertedNote[0].id}, id FROM tags WHERE name = ANY(${note.data.tags}::text[])
+          `;
+
+      }
+
+      return insertedNote;
+    })
+
 
     if (result.length === 0) {
       return NextResponse.json(

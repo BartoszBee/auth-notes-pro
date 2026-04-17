@@ -45,6 +45,11 @@ export default function Notes() {
               <h2>{note.title}</h2>
               {note.content && <p>{note.content}</p>}
               <p>{note.created_at}</p>
+              <ul>
+                {note.tags.map((tag, ind) => (
+                  <li key={ind}>{tag}</li>
+                ))}
+              </ul>
               <div>
                 <Link href={`/notes/${note.id}/edit`}>Edytuj</Link>
                 <button onClick={() => mutation.mutate(note.id)}>Usuń</button>
