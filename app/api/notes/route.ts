@@ -34,7 +34,7 @@ export async function POST(request: NextRequest) {
   `;
 
       if (note.data.tags && note.data.tags.length > 0) {
-        const insertedTags = await sql`
+         await sql`
           INSERT INTO tags (name)
           SELECT UNNEST(${note.data.tags}::text[])
           ON CONFLICT (name) DO UPDATE SET name = EXCLUDED.name
