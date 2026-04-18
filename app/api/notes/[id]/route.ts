@@ -99,16 +99,36 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
 
     try {
 
+  
+
         let result = null;
         if (user.role === "admin") {
             result = await sql`
-            SELECT id, title, content, created_at FROM notes 
-            WHERE id = ${id}            
+            SELECT
+            notes.id,
+            notes.title,
+            notes.content,
+            notes.created_at,
+            array_agg(tags.name) FILTER (WHERE tags.name IS NOT NULL) AS tags
+            FROM notes
+            LEFT JOIN note_tags ON notes.id = note_tags.note_id
+            LEFT JOIN tags      ON note_tags.tag_id = tags.id
+            WHERE notes.id = ${id}
+            GROUP BY notes.id          
         `;
         } else {
             result = await sql`
-            SELECT id, title, content, created_at FROM notes 
-            WHERE id = ${id} and user_id = ${user.id}            
+             SELECT
+            notes.id,
+            notes.title,
+            notes.content,
+            notes.created_at,
+            array_agg(tags.name) FILTER (WHERE tags.name IS NOT NULL) AS tags
+            FROM notes
+            LEFT JOIN note_tags ON notes.id = note_tags.note_id
+            LEFT JOIN tags      ON note_tags.tag_id = tags.id
+            WHERE notes.id = ${id} AND notes.user_id = ${user.id}
+            GROUP BY notes.id         
         `;
         }
 
