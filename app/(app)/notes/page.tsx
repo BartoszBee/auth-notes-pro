@@ -7,6 +7,7 @@ import { useState, useEffect } from "react";
 export default function Notes() {
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [error, setError] = useState("");
   const queryClient = useQueryClient();
   const { data, isLoading, isError } = useQuery<Note[]>({
     queryKey: ["notes", debouncedSearch],
@@ -18,7 +19,8 @@ export default function Notes() {
 
   const mutation = useMutation<Response, Error, number>({
     mutationFn: (id) => fetch(`/api/notes/${id}`, { method: "DELETE" }),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["notes"] }),
+    onSuccess: () => {setError(""); queryClient.invalidateQueries({ queryKey: ["notes"] })},
+    onError: () => setError("Nie udało się usunąć notatki"),
   });
 
   useEffect(() => {
@@ -34,6 +36,7 @@ export default function Notes() {
   return (
     <>
       <h1>Lista notatek: </h1>
+      {error && <p>{error}</p>}
       <p>
         Wyszukiwanie:{" "}
         <input value={search} onChange={(e) => setSearch(e.target.value)} />
